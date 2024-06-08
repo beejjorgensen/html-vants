@@ -38,6 +38,7 @@ function drawPixel(idata, x, y, rgba) {
 
 function animate(c, vants) {
     let prevTimeStamp = null;
+    let steps = 0;
 
     function onFrame(timeStamp) {
         if (prevTimeStamp === null)
@@ -92,10 +93,11 @@ function animate(c, vants) {
 
         hideVants();
 
-        let steps = SIM_STEPS_PER_SECOND * elapsed / 1000;
-        steps = Math.max(1, steps); // Don't step less than 1 per frame
-        for (let i = 0; i < steps; i++)
+        steps += SIM_STEPS_PER_SECOND * elapsed / 1000;
+        while(steps > 1) {
             moveVants();
+            steps--;
+        }
 
         showVants();
 
