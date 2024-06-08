@@ -1,7 +1,7 @@
 (() => {
 
 const VANTS_COUNT = 8;
-const SIM_STEPS_PER_FRAME = 20;
+const SIM_STEPS_PER_SECOND = 500;
 
 const dirs = [[0,1],[-1,0],[0,-1],[1,0]]; // down, left, up, right
 
@@ -37,59 +37,74 @@ function drawPixel(idata, x, y, rgba) {
 }
 
 function animate(c, vants) {
+    let prevTimeStamp = null;
 
-    const ctx = c.getContext('2d');
-    const idata = ctx.getImageData(0, 0, c.width, c.height);
-    const whitePixel = [255,255,255,255];
-    const redPixel = [255,0,0,255];
-    const bluePixel = [0,0,255,255];
+    function onFrame(timeStamp) {
+        if (prevTimeStamp === null)
+            prevTimeStamp = timeStamp - 30;
 
-    function hideVants() {
-        for (let v of vants)
-            if (v.prev_color !== null)
-                drawPixel(idata, v.x, v.y, v.prev_color);
-    }
+        const elapsed = timeStamp - prevTimeStamp;
+        prevTimeStamp = timeStamp;
 
-    function moveVants() {
-        for (let v of vants) {
-            const dx = dirs[v.dir][0];
-            const dy = dirs[v.dir][1];
+        const ctx = c.getContext('2d');
+        const idata = ctx.getImageData(0, 0, c.width, c.height);
+        const whitePixel = [255,255,255,255];
+        const redPixel = [255,0,0,255];
+        const bluePixel = [0,0,255,255];
 
-            v.x += dx;
-            v.y += dy;
+        function hideVants() {
+            for (let v of vants)
+                if (v.prev_color !== null)
+                    drawPixel(idata, v.x, v.y, v.prev_color);
+        }
 
-            if (v.x < 0) v.x = c.width - 1;
-            if (v.x > c.width - 1) v.x = 0;
-            if (v.y < 0) v.y = c.height - 1;
-            if (v.y > c.height - 1) v.y = 0;
+        function moveVants() {
+            for (let v of vants) {
+                const dx = dirs[v.dir][0];
+                const dy = dirs[v.dir][1];
 
-            const new_color = getPixel(idata, v.x, v.y);
+                v.x += dx;
+                v.y += dy;
 
-            if (new_color[0] > 127) {  // is red, turn right, change to blue
-                v.dir = (v.dir + 1) % 4;
-                drawPixel(idata, v.x, v.y, bluePixel);
-            } else {  // is blue, turn left, change to red
-                v.dir = v.dir == 0? 3: v.dir - 1;
-                drawPixel(idata, v.x, v.y, redPixel);
+                if (v.x < 0) v.x = c.width - 1;
+                if (v.x > c.width - 1) v.x = 0;
+                if (v.y < 0) v.y = c.height - 1;
+                if (v.y > c.height - 1) v.y = 0;
+
+                const new_color = getPixel(idata, v.x, v.y);
+
+                if (new_color[0] > 127) {  // is red, turn right, change to blue
+                    v.dir = (v.dir + 1) % 4;
+                    drawPixel(idata, v.x, v.y, bluePixel);
+                } else {  // is blue, turn left, change to red
+                    v.dir = v.dir == 0? 3: v.dir - 1;
+                    drawPixel(idata, v.x, v.y, redPixel);
+                }
             }
         }
-    }
 
-    function showVants() {
-        for (let v of vants) {
-            v.prev_color = getPixel(idata, v.x, v.y);
-            drawPixel(idata, v.x, v.y, whitePixel);
+        function showVants() {
+            for (let v of vants) {
+                v.prev_color = getPixel(idata, v.x, v.y);
+                drawPixel(idata, v.x, v.y, whitePixel);
+            }
         }
+
+        hideVants();
+
+        let steps = SIM_STEPS_PER_SECOND * elapsed / 1000;
+        steps = Math.max(1, steps); // Don't step less than 1 per frame
+        for (let i = 0; i < steps; i++)
+            moveVants();
+
+        showVants();
+
+        ctx.putImageData(idata, 0, 0);
+        
+        requestAnimationFrame(onFrame);
     }
 
-    hideVants();
-    for (let i = 0; i < SIM_STEPS_PER_FRAME; i++)
-        moveVants();
-    showVants();
-
-    ctx.putImageData(idata, 0, 0);
-    
-    requestAnimationFrame(() => { animate(c, vants); });
+    requestAnimationFrame(onFrame);
 }
 
 function randInt(b) {
@@ -110,7 +125,7 @@ function onLoad() {
         vants.push(v);
     }
 
-    requestAnimationFrame(() => { animate(c, vants); });
+    animate(c, vants);
 }
 
 window.addEventListener('DOMContentLoaded', onLoad);
