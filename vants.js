@@ -1,7 +1,7 @@
 (() => {
 
 const VANTS_COUNT = 8;
-const SIM_STEPS_PER_FRAME = 8;
+const SIM_STEPS_PER_FRAME = 20;
 
 const dirs = [[0,1],[-1,0],[0,-1],[1,0]]; // down, left, up, right
 
