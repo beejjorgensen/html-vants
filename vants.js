@@ -1,7 +1,7 @@
 (() => {
 
 const VANTS_COUNT = 8;
-const SIM_STEPS_PER_SECOND = 500;
+let steps_per_second;
 
 const dirs = [[0,1],[-1,0],[0,-1],[1,0]]; // down, left, up, right
 
@@ -93,7 +93,7 @@ function animate(c, vants) {
 
         hideVants();
 
-        steps += SIM_STEPS_PER_SECOND * elapsed / 1000;
+        steps += steps_per_second * elapsed / 1000;
         while(steps > 1) {
             moveVants();
             steps--;
@@ -113,6 +113,10 @@ function randInt(b) {
     return (Math.random() * b) | 0;
 }
 
+function onSpeedChange(ev) {
+    steps_per_second = qs("#speed").value;
+}
+
 function onLoad() {
     const vants = [];
 
@@ -126,6 +130,9 @@ function onLoad() {
             randInt(4));
         vants.push(v);
     }
+
+    qs("#speed").addEventListener("input", onSpeedChange);
+    steps_per_second = qs("#speed").value;
 
     animate(c, vants);
 }
