@@ -40,18 +40,18 @@ function animate(c, vants) {
     let prevTimeStamp = null;
     let steps = 0;
 
+    const ctx = c.getContext('2d');
+    const idata = ctx.getImageData(0, 0, c.width, c.height);
+    const whitePixel = [255,255,255,255];
+    const redPixel = [255,0,0,255];
+    const bluePixel = [0,0,255,255];
+
     function onFrame(timeStamp) {
         if (prevTimeStamp === null)
             prevTimeStamp = timeStamp - 30;
 
         const elapsed = timeStamp - prevTimeStamp;
         prevTimeStamp = timeStamp;
-
-        const ctx = c.getContext('2d');
-        const idata = ctx.getImageData(0, 0, c.width, c.height);
-        const whitePixel = [255,255,255,255];
-        const redPixel = [255,0,0,255];
-        const bluePixel = [0,0,255,255];
 
         function hideVants() {
             for (let v of vants)
